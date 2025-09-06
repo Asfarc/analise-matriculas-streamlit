@@ -146,7 +146,7 @@ class DataParser:
 
 def load_default_excel():
     """Carrega o arquivo Excel padrão do repositório ou local"""
-    default_file = "App_graficos/analise_deficiencias_20250906_093833.xlsx"
+    default_file = "analise_deficiencias_20250906_093833"
 
     # Primeiro tenta carregar localmente
     if os.path.exists(default_file):
