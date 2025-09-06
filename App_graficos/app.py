@@ -5,6 +5,9 @@ import plotly.graph_objects as go
 import re
 from typing import Dict, List, Tuple, Optional
 import numpy as np
+import os
+import requests
+from io import BytesIO
 
 # Configuração da página
 st.set_page_config(
@@ -85,10 +88,14 @@ class DataParser:
     @staticmethod
     def extract_value_and_percent(text: str) -> Tuple[Optional[float], Optional[float]]:
         """Extrai valor absoluto e percentual de uma string"""
-        if pd.isna(text) or text == 'N/A':
+        if pd.isna(text):
             return None, None
 
         text = str(text).strip()
+
+        # Verifica se é N/A ou contém N/A
+        if text.upper().startswith('N/A') or text.upper() == 'N/A':
+            return None, None
 
         # Padrão: valor (percentual%)
         match = re.match(r'^([\d\.]+)\s*\((\d+[,\.]\d+)%\)$', text)
@@ -137,15 +144,43 @@ class DataParser:
         return results
 
 
+def load_default_excel():
+    """Carrega o arquivo Excel padrão do repositório ou local"""
+    default_file = "analise_deficiencias_20250906_093833.xlsx"
+
+    # Primeiro tenta carregar localmente
+    if os.path.exists(default_file):
+        try:
+            return pd.ExcelFile(default_file)
+        except:
+            pass
+
+    # Se não encontrar localmente, tenta baixar do GitHub
+    github_url = f"https://github.com/seu-usuario/seu-repo/raw/main/{default_file}"
+
+    try:
+        response = requests.get(github_url)
+        if response.status_code == 200:
+            return pd.ExcelFile(BytesIO(response.content))
+    except:
+        pass
+
+    return None
+
+
 def load_and_parse_excel(file) -> Dict:
     """Carrega e faz o parsing do arquivo Excel"""
     try:
-        # Lê todas as abas
-        excel_file = pd.ExcelFile(file)
+        # Se file é um caminho string, carrega o arquivo
+        if isinstance(file, str):
+            excel_file = pd.ExcelFile(file)
+        else:
+            excel_file = pd.ExcelFile(file)
+
         data = {}
 
         for sheet_name in excel_file.sheet_names:
-            df = pd.read_excel(file, sheet_name=sheet_name, header=None)
+            df = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
 
             # Assume que primeira coluna é Métrica e segunda é Valor
             if df.shape[1] < 2:
@@ -179,13 +214,12 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
         if pd.isna(metric):
             continue
 
-        metric = str(metric)  # Não strip ainda para preservar espaços iniciais
+        # Preserva espaços iniciais para detectar indentação
+        metric_raw = str(metric)
+        is_indented = metric_raw.startswith('  ') or metric_raw.startswith('\t')
 
-        # Verifica se a linha está indentada (começa com espaços)
-        is_indented = metric.startswith('  ') or metric.startswith('\t')
-
-        # Agora faz o strip normal
-        metric = metric.strip()
+        # Remove espaços extras
+        metric = metric_raw.strip()
 
         # Verifica se é cabeçalho de seção
         if DataParser.is_section_header(metric):
@@ -213,7 +247,7 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
             if valor:
                 total_matriculas = valor
 
-        # Detecta subsecções específicas (apenas se não está indentado)
+        # Detecta subsecções específicas (apenas linhas não-indentadas que terminam com ':')
         if not is_indented and metric.endswith(':'):
             subsection_name = metric.rstrip(':')
 
@@ -242,8 +276,8 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
             continue
 
         # Parse do valor
-        if pd.notna(value):
-            value_str = str(value).strip()
+        if pd.notna(value) or (pd.isna(value) and metric):  # Inclui linhas com métrica mas sem valor
+            value_str = str(value).strip() if pd.notna(value) else ""
 
             # Tenta extrair valor e percentual
             valor, percentual = DataParser.extract_value_and_percent(value_str)
@@ -267,9 +301,10 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
                 'valor_original': value_str
             }
 
+            # Sempre adiciona, mesmo com valor None (para preservar N/A)
             if current_subsection:
                 sections[current_section]['subsections'][current_subsection].append(item_data)
-            else:
+            elif metric:  # Só adiciona se houver métrica
                 sections[current_section]['items'].append(item_data)
 
     return {
@@ -317,8 +352,8 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         gradient = PASTEL_COLORS['gradient_blue']
         if num_bars <= len(gradient):
             # Seleciona cores espaçadas do gradiente
-            step = len(gradient) // num_bars
-            colors = [gradient[i * step] for i in range(num_bars)]
+            step = max(1, len(gradient) // num_bars)
+            colors = [gradient[min(i * step, len(gradient) - 1)] for i in range(num_bars)]
         else:
             # Se tiver mais barras que cores, repete o gradiente
             colors = [gradient[i % len(gradient)] for i in range(num_bars)]
@@ -366,7 +401,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
     full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
 
-    max_value = data[y_col].max()
+    max_value = data[y_col].max() if not data.empty else 100
 
     fig.update_layout(
         template='plotly',  # Theme classic
@@ -476,7 +511,6 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     line_color = PASTEL_COLORS['single']
 
     # Prepara os textos - mostra valores apenas em índices pares (0, 2, 4, etc.)
-    # Isso corresponde a mostrar valores para idades 1, 3, 5, etc. se começar de 1
     text_values = []
     for idx, value in enumerate(data[y_col]):
         # Mostra valor se o índice for par (0, 2, 4...)
@@ -642,7 +676,7 @@ def categorize_data(section_data: dict, section_name: str) -> dict:
         default_category_name = re.sub(r'^\d+\.\s*', '', section_name).strip().capitalize()
 
         # Se não foi categorizado, usa o nome limpo da seção como categoria
-        if not categorized and item['valor']:
+        if not categorized and (item['valor'] or item.get('valor_original')):
             if default_category_name not in categories:
                 categories[default_category_name] = []
             categories[default_category_name].append(item)
@@ -679,10 +713,11 @@ def main():
         st.markdown("### ℹ️ Informações")
         st.info(
             "**Como usar:**\n"
-            "1. Faça upload do arquivo Excel\n"
-            "2. Selecione o tipo de deficiência (aba)\n"
-            "3. Escolha a seção de análise\n"
-            "4. Selecione a categoria para visualização\n\n"
+            "1. O arquivo padrão é carregado automaticamente\n"
+            "2. Ou faça upload de outro arquivo Excel\n"
+            "3. Selecione o tipo de deficiência (aba)\n"
+            "4. Escolha a seção de análise\n"
+            "5. Selecione a categoria para visualização\n\n"
             "**Observações:**\n"
             "- Números formatados em pt-BR\n"
             "- Percentuais calculados automaticamente\n"
@@ -691,22 +726,57 @@ def main():
             "- Fonte: Open Sans"
         )
 
-    # Upload do arquivo
-    uploaded_file = st.file_uploader(
-        "Selecione o arquivo Excel",
-        type=['xlsx', 'xls'],
-        help="Arquivo deve conter abas com dados estruturados de matrículas por tipo de deficiência"
-    )
+    # Inicializa o estado da sessão
+    if 'data' not in st.session_state:
+        st.session_state.data = None
+        st.session_state.file_name = None
+
+    # Tenta carregar o arquivo padrão automaticamente
+    default_file = "analise_deficiencias_20250906_093833.xlsx"
+
+    # Upload do arquivo ou uso do padrão
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+        uploaded_file = st.file_uploader(
+            "Selecione outro arquivo Excel (opcional)",
+            type=['xlsx', 'xls'],
+            help="Arquivo deve conter abas com dados estruturados de matrículas por tipo de deficiência"
+        )
+
+    with col2:
+        if st.button("🔄 Recarregar arquivo padrão"):
+            st.session_state.data = None
+            st.session_state.file_name = None
+            st.rerun()
+
+    # Decide qual arquivo usar
+    file_to_load = None
+    file_name = None
 
     if uploaded_file is not None:
-        # Carrega e processa os dados
+        file_to_load = uploaded_file
+        file_name = uploaded_file.name
+    elif st.session_state.data is None:  # Carrega o padrão apenas se não há dados
+        if os.path.exists(default_file):
+            file_to_load = default_file
+            file_name = default_file
+            st.success(f"✅ Arquivo padrão '{default_file}' carregado automaticamente!")
+        else:
+            st.warning(f"⚠️ Arquivo padrão '{default_file}' não encontrado. Por favor, faça upload de um arquivo.")
+
+    # Carrega e processa o arquivo se necessário
+    if file_to_load and (st.session_state.file_name != file_name):
         with st.spinner("Processando arquivo..."):
-            data = load_and_parse_excel(uploaded_file)
+            data = load_and_parse_excel(file_to_load)
+            if data:
+                st.session_state.data = data
+                st.session_state.file_name = file_name
 
-        if not data:
-            st.error("Não foi possível processar o arquivo.")
-            return
+    # Usa os dados da sessão
+    data = st.session_state.data
 
+    if data:
         # Interface de seleção
         col1, col2, col3 = st.columns(3)
 
@@ -747,7 +817,7 @@ def main():
                         )
                     else:
                         st.warning("Nenhuma categoria de dados encontrada nesta seção.")
-                        return
+                        selected_category = None
 
         # Separador visual
         st.divider()
@@ -756,6 +826,15 @@ def main():
         if selected_sheet and selected_section and selected_category:
             with st.container():
                 st.subheader(f"Visualização: {selected_category}")
+
+                # Debug opcional
+                if st.checkbox("🔍 Mostrar debug", value=False):
+                    st.write(f"Categoria: {selected_category}")
+                    st.write(f"Número de itens encontrados: {len(categories.get(selected_category, []))}")
+                    if selected_category in categories and len(categories[selected_category]) > 0:
+                        st.write("Primeiros 3 itens:")
+                        for i, item in enumerate(categories[selected_category][:3]):
+                            st.write(f"  {i + 1}. {item}")
 
                 # Prepara dados para visualização
                 if selected_category == 'Composição por Idade/Etapa':
@@ -781,16 +860,17 @@ def main():
                         for item in cat_data:
                             df_data.append({
                                 'Categoria': item['metrica'],
-                                'Valor': item['valor'] if item['valor'] else 0,
-                                'Percentual': item['percentual'] if item['percentual'] else 0
+                                'Valor': item['valor'] if item['valor'] is not None else 0,
+                                'Percentual': item['percentual'] if item['percentual'] is not None else 0,
+                                'Valor_Original': item.get('valor_original', '')
                             })
 
                         df = pd.DataFrame(df_data)
 
-                        # Remove linhas com valor zero ou nulo
-                        df = df[df['Valor'] > 0]
+                        # Para gráficos, remove linhas com valor zero ou nulo
+                        df_plot = df[df['Valor'] > 0].copy()
 
-                        if not df.empty:
+                        if not df_plot.empty:
                             # Determina o nome correto para o título
                             title_category = selected_category
                             if selected_category == 'Indicadores Gerais':
@@ -801,10 +881,10 @@ def main():
                             # Cria gráfico apropriado
                             if selected_category == 'Idade' or 'idade' in selected_category.lower():
                                 # Para idade, usa gráfico de linha
-                                df['Idade_Num'] = df['Categoria'].str.extract(r'(\d+)').astype(float)
-                                df = df.sort_values('Idade_Num')
+                                df_plot['Idade_Num'] = df_plot['Categoria'].str.extract(r'(\d+)').astype(float)
+                                df_plot = df_plot.sort_values('Idade_Num')
                                 fig = create_line_chart(
-                                    df,
+                                    df_plot,
                                     title_category,
                                     'Idade_Num',
                                     'Valor',
@@ -814,7 +894,7 @@ def main():
                             else:
                                 # Para outras categorias, usa gráfico de barras
                                 fig = create_bar_chart(
-                                    df,
+                                    df_plot,
                                     title_category,
                                     'Categoria',
                                     'Valor',
@@ -825,35 +905,58 @@ def main():
 
                             st.plotly_chart(fig, use_container_width=True)
 
-                            # Exibe tabela de dados
-                            with st.expander("📋 Ver dados tabulares"):
-                                # Formata a tabela com padrão brasileiro
-                                df_display = df.copy()
-                                df_display['Valor'] = df_display['Valor'].apply(lambda x: format_number_br(x))
-                                df_display['Percentual'] = df_display['Percentual'].apply(
-                                    lambda x: f"{format_number_br(x, True)}%" if x > 0 else "—"
-                                )
-                                st.dataframe(df_display, use_container_width=True)
+                        # Sempre exibe tabela de dados (incluindo valores N/A)
+                        with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
+                            # Formata a tabela com padrão brasileiro
+                            df_display = df.copy()
 
-                            # Validação e estatísticas
+                            # Formatação especial para valores
+                            def format_value_display(row):
+                                if row['Valor'] == 0 and 'N/A' in str(row.get('Valor_Original', '')):
+                                    return "N/A"
+                                else:
+                                    return format_number_br(row['Valor'])
+
+                            df_display['Valor'] = df_display.apply(format_value_display, axis=1)
+                            df_display['Percentual'] = df_display['Percentual'].apply(
+                                lambda x: f"{format_number_br(x, True)}%" if x > 0 else "—"
+                            )
+
+                            # Remove coluna auxiliar antes de exibir
+                            if 'Valor_Original' in df_display.columns:
+                                df_display = df_display.drop('Valor_Original', axis=1)
+                            if 'Idade_Num' in df_display.columns:
+                                df_display = df_display.drop('Idade_Num', axis=1)
+
+                            st.dataframe(df_display, use_container_width=True)
+
+                        # Validação e estatísticas (usando apenas valores válidos)
+                        if not df_plot.empty:
                             col1, col2, col3 = st.columns(3)
                             with col1:
-                                st.metric("Total da Categoria", format_number_br(df['Valor'].sum()))
+                                st.metric("Total da Categoria", format_number_br(df_plot['Valor'].sum()))
                             with col2:
                                 if sheet_data['total_matriculas']:
                                     st.metric("Total de Matrículas",
                                               format_number_br(sheet_data['total_matriculas']))
                             with col3:
                                 if sheet_data['total_matriculas']:
-                                    coverage = (df['Valor'].sum() / sheet_data['total_matriculas']) * 100
+                                    coverage = (df_plot['Valor'].sum() / sheet_data['total_matriculas']) * 100
                                     st.metric("Cobertura", f"{format_number_br(coverage, True)}%")
-                        else:
-                            st.warning("Nenhum dado válido encontrado para esta categoria.")
+
+                        # Mensagem informativa se não há dados para gráfico
+                        if df_plot.empty and not df.empty:
+                            st.info(
+                                "ℹ️ Esta categoria contém apenas valores N/A ou sem dados numéricos. Veja os detalhes na tabela acima.")
+                    else:
+                        st.warning("Nenhum dado encontrado para esta categoria.")
 
         # Resumo do arquivo no sidebar
         if data:
             with st.sidebar:
                 st.markdown("### 📊 Resumo do Arquivo")
+                if st.session_state.file_name:
+                    st.write(f"**Arquivo:** {st.session_state.file_name}")
                 st.write(f"**Abas encontradas:** {len(data)}")
                 for sheet in data.keys():
                     sections_count = len(data[sheet]['sections'])
