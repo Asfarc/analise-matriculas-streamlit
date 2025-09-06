@@ -395,7 +395,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper", yref="paper",
-        x=0, y=-0.33,
+        x=0, y=-0.50,
         showarrow=False,
         font=dict(size=font_sizes['reference'], color="gray"),
         xanchor='left'
