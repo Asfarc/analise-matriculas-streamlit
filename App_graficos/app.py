@@ -13,11 +13,26 @@ st.set_page_config(
     layout="wide"
 )
 
-# Definir paleta de cores Pastel2
-PASTEL2_COLORS = [
-    '#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4',
-    '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'
-]
+# Definir paletas de cores pastéis
+PASTEL_COLORS = {
+    # Para categorias binárias (2 valores) - cores contrastantes
+    'binary': ['#a8d8b9', '#fdb4b4'],  # Verde pastel e Rosa pastel
+
+    # Para múltiplas categorias - gradiente de azul pastel
+    'gradient_blue': [
+        '#2a5a7a',  # Azul mais escuro
+        '#4b7c9e',
+        '#6c9ec2',
+        '#8db9d8',
+        '#aed4ee',
+        '#cfe8f7',
+        '#e0f2fc',
+        '#f0f9ff'  # Azul mais claro
+    ],
+
+    # Cor única para gráficos de linha
+    'single': '#6c9ec2'
+}
 
 # Configurações globais de estilo
 STYLE_CONFIG = {
@@ -285,12 +300,24 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     # Ordena por valor decrescente
     data = data.sort_values(by=y_col, ascending=True)
 
-    # Cria o gráfico
-    fig = go.Figure()
-
-    # Usa cores da paleta Pastel2
+    # Define cores baseado no número de categorias
     num_bars = len(data)
-    colors = [PASTEL2_COLORS[i % len(PASTEL2_COLORS)] for i in range(num_bars)]
+
+    if num_bars == 2:
+        # Para categorias binárias (ex: M/F, Rural/Urbana)
+        colors = PASTEL_COLORS['binary']
+    else:
+        # Para múltiplas categorias, usa gradiente de tons pastéis
+        gradient = PASTEL_COLORS['gradient_blue']
+        if num_bars <= len(gradient):
+            # Seleciona cores espaçadas do gradiente
+            step = len(gradient) // num_bars
+            colors = [gradient[i * step] for i in range(num_bars)]
+        else:
+            # Se tiver mais barras que cores, repete o gradiente
+            colors = [gradient[i % len(gradient)] for i in range(num_bars)]
+        # Inverte para que valores maiores tenham cores mais escuras
+        colors = colors[::-1]
 
     # Texto para hover e labels com formatação pt-BR
     if percent_col and percent_col in data.columns:
@@ -309,6 +336,8 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             for _, row in data.iterrows()
         ]
         text_labels = [f"{format_number_br(row[y_col])}" for _, row in data.iterrows()]
+
+    fig = go.Figure()
 
     fig.add_trace(go.Bar(
         y=data[x_col],
@@ -362,8 +391,9 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             gridwidth=1,
             gridcolor='#EEEEEE',
             zeroline=True,
-            zerolinewidth=1,
+            zerolinewidth=2,  # Aumentado para maior visibilidade
             zerolinecolor='#444444',
+            layer='above traces',  # Garante que a linha zero fique acima das barras
             automargin=True
         ),
         yaxis=dict(
@@ -434,15 +464,26 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Ordena por x (geralmente idade)
     data = data.sort_values(by=x_col)
+    data = data.reset_index(drop=True)  # Reset index para garantir sequência correta
 
-    # Usa cor da paleta Pastel2
-    line_color = PASTEL2_COLORS[2]  # Um azul claro pastel
+    # Usa cor única da paleta pastel
+    line_color = PASTEL_COLORS['single']
+
+    # Prepara os textos - mostra valores apenas em índices pares (0, 2, 4, etc.)
+    # Isso corresponde a mostrar valores para idades 1, 3, 5, etc. se começar de 1
+    text_values = []
+    for idx, value in enumerate(data[y_col]):
+        # Mostra valor se o índice for par (0, 2, 4...)
+        if idx % 2 == 0:
+            text_values.append(format_number_br(value))
+        else:
+            text_values.append("")  # Não mostra valor para índices ímpares
 
     fig.add_trace(go.Scatter(
         x=data[x_col],
         y=data[y_col],
         mode='lines+markers+text',
-        text=[format_number_br(v) for v in data[y_col]],
+        text=text_values,
         textposition="top center",
         textfont=dict(
             size=font_sizes['values'],
@@ -451,7 +492,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         line=dict(color=line_color, width=3),
         marker=dict(size=10, color=line_color),
         hovertemplate='<b>%{x}</b><br>Quantidade: ' +
-                      '%{text}<extra></extra>'
+                      '%{y:,.0f}<extra></extra>'
     ))
 
     # Título completo com tamanhos personalizados
@@ -485,7 +526,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             gridwidth=1,
             gridcolor='#EEEEEE',
             zeroline=True,
-            zerolinewidth=1,
+            zerolinewidth=2,  # Aumentado para maior visibilidade
             zerolinecolor='#444444',
             automargin=True
         ),
