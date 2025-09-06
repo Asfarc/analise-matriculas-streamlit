@@ -13,6 +13,43 @@ st.set_page_config(
     layout="wide"
 )
 
+# Definir paleta de cores Pastel2
+PASTEL2_COLORS = [
+    '#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4',
+    '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'
+]
+
+# Configurações globais de estilo
+STYLE_CONFIG = {
+    'font_family': 'Open Sans, sans-serif',
+    'title_font': {
+        'family': 'Open Sans, sans-serif',
+        'size': 20,
+        'color': 'black'
+    },
+    'margins': {
+        't': 100,  # top
+        'b': 80,  # bottom
+        'l': 210,  # left
+        'r': 80,  # right
+        'pad': 4  # padding
+    },
+    'grid': {
+        'x': {
+            'showgrid': True,
+            'gridwidth': 1,
+            'gridcolor': '#EEEEEE',
+            'zeroline': True,
+            'zerolinewidth': 1,
+            'zerolinecolor': '#444444'
+        },
+        'y': {
+            'showgrid': False,
+            'zeroline': False
+        }
+    }
+}
+
 
 class DataParser:
     """Parser especializado para a estrutura específica dos dados"""
@@ -234,7 +271,7 @@ def format_number_br(value: float, is_percent: bool = False) -> str:
 def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
                      percent_col: str = None, deficiency_type: str = "",
                      font_sizes: dict = None) -> go.Figure:
-    """Cria gráfico de barras interativo com formatação pt-BR"""
+    """Cria gráfico de barras interativo com formatação pt-BR e estilo aprimorado"""
 
     if font_sizes is None:
         font_sizes = {
@@ -250,6 +287,10 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Cria o gráfico
     fig = go.Figure()
+
+    # Usa cores da paleta Pastel2
+    num_bars = len(data)
+    colors = [PASTEL2_COLORS[i % len(PASTEL2_COLORS)] for i in range(num_bars)]
 
     # Texto para hover e labels com formatação pt-BR
     if percent_col and percent_col in data.columns:
@@ -275,52 +316,101 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         orientation='h',
         text=text_labels,
         textposition='outside',
-        textfont=dict(size=font_sizes['values']),
+        textfont=dict(
+            size=font_sizes['values'],
+            family='Open Sans, sans-serif'
+        ),
         hovertemplate='%{hovertext}<extra></extra>',
         hovertext=hover_text,
-        marker_color='#1f77b4'
+        marker_color=colors,
+        width=0.8  # Bar width 80%
     ))
 
     # Título completo com tamanhos personalizados
-    full_title = f"<span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span><br>"
+    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
     full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
 
+    max_value = data[y_col].max()
+
     fig.update_layout(
+        template='plotly',  # Theme classic
         title={
             'text': full_title,
             'x': 0.5,
-            'xanchor': 'center'
+            'xanchor': 'center',
+            'font': {
+                'family': 'Open Sans, sans-serif'
+            }
         },
         xaxis=dict(
             title={
                 'text': "Quantidade de Matrículas",
-                'font': dict(size=font_sizes['labels'])
+                'font': dict(
+                    size=font_sizes['labels'],
+                    family='Open Sans, sans-serif'
+                )
             },
-            tickfont=dict(size=font_sizes['values']),
+            tickfont=dict(
+                size=font_sizes['values'],
+                family='Open Sans, sans-serif'
+            ),
             tickformat=',.0f',
-            separatethousands=True
+            separatethousands=True,
+            range=[-25, max_value * 1.15],  # Min: -25 conforme solicitado
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='#EEEEEE',
+            zeroline=True,
+            zerolinewidth=1,
+            zerolinecolor='#444444',
+            automargin=True
         ),
         yaxis=dict(
             title={
                 'text': "",
-                'font': dict(size=font_sizes['labels'])
+                'font': dict(
+                    size=font_sizes['labels'],
+                    family='Open Sans, sans-serif'
+                )
             },
-            tickfont=dict(size=font_sizes['labels'])
+            tickfont=dict(
+                size=font_sizes['labels'],
+                family='Open Sans, sans-serif'
+            ),
+            range=[-1.3, len(data)],  # Min: -1.3 conforme solicitado
+            showgrid=False,
+            zeroline=False,
+            automargin=True
         ),
         height=max(400, len(data) * 50),
         showlegend=False,
         hovermode='closest',
-        margin=dict(l=200, r=150, t=120, b=100)
+        margin=dict(
+            l=STYLE_CONFIG['margins']['l'],
+            r=STYLE_CONFIG['margins']['r'],
+            t=STYLE_CONFIG['margins']['t'],
+            b=STYLE_CONFIG['margins']['b'],
+            pad=STYLE_CONFIG['margins']['pad']
+        ),
+        font=dict(
+            family='Open Sans, sans-serif'
+        ),
+        bargap=0,  # Bar padding: 0
+        bargroupgap=0
     )
 
     # Adiciona rodapé com negrito apenas em "Fonte:"
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper", yref="paper",
-        x=0, y=-0.55,
+        x=0, y=-0.45,
         showarrow=False,
-        font=dict(size=font_sizes['reference'], color="gray"),
+        font=dict(
+            size=font_sizes['reference'],
+            color="gray",
+            family='Open Sans, sans-serif'
+        ),
         xanchor='left'
     )
 
@@ -329,7 +419,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
 def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
                       deficiency_type: str = "", font_sizes: dict = None) -> go.Figure:
-    """Cria gráfico de linha interativo com formatação pt-BR"""
+    """Cria gráfico de linha interativo com formatação pt-BR e estilo aprimorado"""
 
     if font_sizes is None:
         font_sizes = {
@@ -345,59 +435,104 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     # Ordena por x (geralmente idade)
     data = data.sort_values(by=x_col)
 
+    # Usa cor da paleta Pastel2
+    line_color = PASTEL2_COLORS[2]  # Um azul claro pastel
+
     fig.add_trace(go.Scatter(
         x=data[x_col],
         y=data[y_col],
         mode='lines+markers+text',
         text=[format_number_br(v) for v in data[y_col]],
         textposition="top center",
-        textfont=dict(size=font_sizes['values']),
-        line=dict(color='#2ca02c', width=2),
-        marker=dict(size=8),
+        textfont=dict(
+            size=font_sizes['values'],
+            family='Open Sans, sans-serif'
+        ),
+        line=dict(color=line_color, width=3),
+        marker=dict(size=10, color=line_color),
         hovertemplate='<b>%{x}</b><br>Quantidade: ' +
                       '%{text}<extra></extra>'
     ))
 
     # Título completo com tamanhos personalizados
-    full_title = f"<span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span><br>"
+    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
     full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
 
     fig.update_layout(
+        template='plotly',  # Theme classic
         title={
             'text': full_title,
             'x': 0.5,
-            'xanchor': 'center'
+            'xanchor': 'center',
+            'font': {
+                'family': 'Open Sans, sans-serif'
+            }
         },
         xaxis=dict(
             title={
                 'text': x_col.capitalize(),
-                'font': dict(size=font_sizes['labels'])
+                'font': dict(
+                    size=font_sizes['labels'],
+                    family='Open Sans, sans-serif'
+                )
             },
-            tickfont=dict(size=font_sizes['values'])
+            tickfont=dict(
+                size=font_sizes['values'],
+                family='Open Sans, sans-serif'
+            ),
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='#EEEEEE',
+            zeroline=True,
+            zerolinewidth=1,
+            zerolinecolor='#444444',
+            automargin=True
         ),
         yaxis=dict(
             title={
                 'text': "Quantidade de Matrículas",
-                'font': dict(size=font_sizes['labels'])
+                'font': dict(
+                    size=font_sizes['labels'],
+                    family='Open Sans, sans-serif'
+                )
             },
-            tickfont=dict(size=font_sizes['values']),
+            tickfont=dict(
+                size=font_sizes['values'],
+                family='Open Sans, sans-serif'
+            ),
             tickformat=',.0f',
-            separatethousands=True
+            separatethousands=True,
+            showgrid=False,
+            zeroline=False,
+            automargin=True
         ),
         height=500,
         showlegend=False,
         hovermode='x unified',
-        margin=dict(l=100, r=100, t=120, b=100)
+        margin=dict(
+            l=STYLE_CONFIG['margins']['l'],
+            r=STYLE_CONFIG['margins']['r'],
+            t=STYLE_CONFIG['margins']['t'],
+            b=STYLE_CONFIG['margins']['b'],
+            pad=STYLE_CONFIG['margins']['pad']
+        ),
+        font=dict(
+            family='Open Sans, sans-serif'
+        )
     )
 
     # Adiciona rodapé com negrito apenas em "Fonte:"
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper", yref="paper",
-        x=0, y=-0.50,
+        x=0, y=-0.35,
         showarrow=False,
-        font=dict(size=font_sizes['reference'], color="gray"),
+        font=dict(
+            size=font_sizes['reference'],
+            color="gray",
+            family='Open Sans, sans-serif'
+        ),
         xanchor='left'
     )
 
@@ -505,7 +640,8 @@ def main():
             "- Números formatados em pt-BR\n"
             "- Percentuais calculados automaticamente\n"
             "- Gráficos interativos (hover para detalhes)\n"
-            "- Ajuste o tamanho das fontes acima"
+            "- Estilo: Theme Plotly Classic com cores Pastel2\n"
+            "- Fonte: Open Sans"
         )
 
     # Upload do arquivo
