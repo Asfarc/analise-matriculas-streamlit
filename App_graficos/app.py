@@ -640,7 +640,7 @@ def main():
             "- Números formatados em pt-BR\n"
             "- Percentuais calculados automaticamente\n"
             "- Gráficos interativos (hover para detalhes)\n"
-            "- Estilo: Theme Plotly Classic com cores Pastel2\n"
+            "- Cores: Categorias binárias contrastantes, múltiplas em gradiente\n"
             "- Fonte: Open Sans"
         )
 
