@@ -179,7 +179,13 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
         if pd.isna(metric):
             continue
 
-        metric = str(metric).strip()
+        metric = str(metric)  # Não strip ainda para preservar espaços iniciais
+
+        # Verifica se a linha está indentada (começa com espaços)
+        is_indented = metric.startswith('  ') or metric.startswith('\t')
+
+        # Agora faz o strip normal
+        metric = metric.strip()
 
         # Verifica se é cabeçalho de seção
         if DataParser.is_section_header(metric):
@@ -207,8 +213,8 @@ def parse_sheet_data(df: pd.DataFrame) -> Dict:
             if valor:
                 total_matriculas = valor
 
-        # Detecta subsecções específicas
-        if metric.endswith(':'):
+        # Detecta subsecções específicas (apenas se não está indentado)
+        if not is_indented and metric.endswith(':'):
             subsection_name = metric.rstrip(':')
 
             # Mapeia nomes de subsecções para categorias apropriadas
