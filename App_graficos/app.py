@@ -8,10 +8,6 @@ import numpy as np
 import os
 import requests
 from io import BytesIO
-import plotly.io as pio
-import plotly.express as px
-
-pio.templates.default = "seaborn"
 
 # Configuração da página
 st.set_page_config(
@@ -408,7 +404,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     max_value = data[y_col].max() if not data.empty else 100
 
     fig.update_layout(
-        template='seaborn',  # Theme classic
+        template='plotly',  # Theme classic
         title={
             'text': full_title,
             'x': 0.5,
