@@ -591,18 +591,22 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         )
     )
 
-    # Adiciona rodapé com negrito apenas em "Fonte:"
+    # ✅ RODAPÉ CORRETAMENTE POSICIONADO
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
-        xref="paper", yref="paper",
-        x=0, y=-0.35,
+        xref="paper",
+        yref="paper",
+        x=0.01,  # Pequena margem da esquerda
+        y=-0.08,  # Logo abaixo do gráfico
         showarrow=False,
         font=dict(
             size=font_sizes['reference'],
-            color="gray",
+            color="#666666",
             family='Open Sans, sans-serif'
         ),
-        xanchor='left'
+        xanchor='left',
+        yanchor='top',
+        align='left'
     )
 
     return fig
