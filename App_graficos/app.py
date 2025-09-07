@@ -438,7 +438,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             l=150,  # Esquerda
             r=40,  # Direita
             t=120,  # Topo (para título e subtítulo)
-            b=80,  # Base (para rodapé)
+            b=150,  # Base (para rodapé)
             pad=4
         ),
 
