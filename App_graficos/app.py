@@ -408,7 +408,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     max_value = data[y_col].max() if not data.empty else 100
 
     fig.update_layout(
-        template='plotly',  # Theme classic
+        template='seaborn',  # Theme classic
         title={
             'text': full_title,
             'x': 0.5,
