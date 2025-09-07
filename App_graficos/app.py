@@ -58,7 +58,7 @@ STYLE_CONFIG = {
             'gridwidth': 1,
             'gridcolor': '#EEEEEE',
             'zeroline': True,
-            'zerolinewidth': 3,
+            'zerolinewidth': 10,
             'zerolinecolor': '#444444',
 
         },
