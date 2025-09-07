@@ -10,37 +10,23 @@ import requests
 from io import BytesIO
 import textwrap
 
-# Configurações para exportação otimizada para A4
-EXPORT_CONFIG = {
-    'a4_width_cm': 16,  # Largura útil A4 (21cm - margens 3cm + 2cm)
-    'a4_height_cm': 24.7,  # Altura útil A4 (29.7cm - margens 3cm + 2cm)
-    'dpi': 300,  # Alta resolução para impressão
-    'width_px': 1890,  # 16cm * 118 px/cm em 300 DPI
-    'height_px_bar': 945,  # Altura para gráficos de barra (8cm)
-    'height_px_line': 709,  # Altura para gráficos de linha (6cm)
-    'scale': 2  # Fator de escala para melhor qualidade
-}
-
-# Configuração do Plotly para exportação
-plotly_config = {
-    'toImageButtonOptions': {
-        'format': 'png',
-        'filename': 'grafico_educacao_especial',
-        'height': None,  # Será definido por gráfico
-        'width': EXPORT_CONFIG['width_px'],
-        'scale': EXPORT_CONFIG['scale']
-    },
-    'displaylogo': False,
-    'modeBarButtonsToAdd': ['downloadImage'],
-    'displayModeBar': True
-}
-
 # Configuração da página
 st.set_page_config(
     page_title="Análise de Matrículas - Educação Especial",
     page_icon="📊",
     layout="wide"
 )
+
+# Configuração para exportação A4
+A4_CONFIG = {
+    'width_cm': 16,  # Largura útil A4 (21cm - 3cm - 2cm margens)
+    'dpi': 150,  # DPI adequado para documentos digitais
+    'width_px': 945,  # 16cm × 59.06 px/cm @ 150 DPI
+    'bar_height_base': 400,  # Altura base para gráficos de barras
+    'bar_height_per_item': 50,  # Altura adicional por barra
+    'bar_height_max': 1200,  # Altura máxima para gráficos de barras
+    'line_height': 600  # Altura fixa para gráficos de linha
+}
 
 # Definir paletas de cores pastéis
 PASTEL_COLORS = {
@@ -86,7 +72,6 @@ STYLE_CONFIG = {
             'zeroline': True,
             'zerolinewidth': 10,
             'zerolinecolor': '#444444',
-
         },
         'y': {
             'showgrid': False,
@@ -94,6 +79,8 @@ STYLE_CONFIG = {
         }
     }
 }
+
+
 class DataParser:
     """Parser especializado para a estrutura específica dos dados"""
 
@@ -180,6 +167,7 @@ def load_default_excel():
         except:
             pass
     return None
+
 
 def load_and_parse_excel(file) -> Dict:
     """Carrega e faz o parsing do arquivo Excel"""
@@ -421,7 +409,13 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     max_value = data[y_col].max() if not data.empty else 100
 
-    # Layout otimizado para exportação A4
+    # Calcula altura dinâmica baseada no número de barras
+    height = min(
+        max(A4_CONFIG['bar_height_base'], num_bars * A4_CONFIG['bar_height_per_item']),
+        A4_CONFIG['bar_height_max']
+    )
+
+    # Layout
     fig.update_layout(
         template='plotly_white',
         title={
@@ -453,17 +447,15 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             zeroline=False,
             automargin=True
         ),
-        # Dimensões otimizadas para A4
-        height=min(max(600, len(data) * 80), 1200),
-        width=1600,
+        height=height,
+        width=A4_CONFIG['width_px'],
         showlegend=False,
         hovermode='closest',
-        # Margens aumentadas para melhor proporção
         margin=dict(
-            l=200,   # Esquerda
-            r=100,   # Direita
-            t=140,   # Topo
-            b=100,   # Base
+            l=150,
+            r=40,
+            t=120,
+            b=80,
             pad=4
         ),
         font=dict(family='Open Sans, sans-serif'),
@@ -562,7 +554,6 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     # Combina título e subtítulo
     full_title = f"{main_title_html}<br>{subtitle_html}"
 
-    # Layout otimizado para exportação A4
     fig.update_layout(
         template='plotly_white',
         title={
@@ -609,17 +600,15 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             automargin=True,
             layer='above traces'
         ),
-        # Dimensões otimizadas para A4
-        height=700,
-        width=1600,
+        height=A4_CONFIG['line_height'],
+        width=A4_CONFIG['width_px'],
         showlegend=False,
         hovermode='x unified',
-        # Margens aumentadas para melhor proporção
         margin=dict(
-            l=120,
-            r=80,
-            t=140,
-            b=100,
+            l=100,
+            r=40,
+            t=120,
+            b=80,
             pad=4
         ),
         font=dict(
@@ -737,7 +726,6 @@ def main():
         }
 
         st.divider()
-
 
     # Inicializa o estado da sessão
     if 'data' not in st.session_state:
@@ -863,13 +851,19 @@ def main():
                             selected_sheet,
                             font_sizes
                         )
-                        st.plotly_chart(fig, width='stretch')
-                        # Configuração customizada para exportação
-                        config = plotly_config.copy()
-                        config['toImageButtonOptions']['height'] = fig.layout.height
-                        config['toImageButtonOptions'][
-                            'filename'] = f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ', '_')
 
+                        # Configuração de exportação
+                        config = {
+                            'toImageButtonOptions': {
+                                'format': 'png',
+                                'filename': f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ', '_'),
+                                'width': A4_CONFIG['width_px'],
+                                'height': A4_CONFIG['line_height'],
+                                'scale': 1  # Importante: sem multiplicação
+                            },
+                            'displaylogo': False
+                        }
+                        st.plotly_chart(fig, use_container_width=True, config=config)
                 else:
                     # Dados regulares
                     cat_data = categories[selected_category]
@@ -879,7 +873,7 @@ def main():
                         for item in cat_data:
                             # Filtro para remover métricas específicas do RESUMO GERAL
                             if selected_section == "RESUMO GERAL DO DATASET":
-                                metricas_excluir = [  # ← ESTA LINHA ESTAVA FALTANDO
+                                metricas_excluir = [
                                     'total de matrículas',
                                     'total de registros',
                                     'total de escolas únicas',
@@ -908,7 +902,6 @@ def main():
                             elif selected_category == 'Status idade-série':
                                 title_category = "Status Idade-Série"
 
-
                             # Cria gráfico apropriado
                             if selected_category == 'Idade' or 'idade' in selected_category.lower():
                                 # Para idade, usa gráfico de linha
@@ -922,6 +915,7 @@ def main():
                                     selected_sheet,
                                     font_sizes
                                 )
+                                export_height = A4_CONFIG['line_height']
                             else:
                                 # Para outras categorias, usa gráfico de barras
                                 fig = create_bar_chart(
@@ -933,37 +927,86 @@ def main():
                                     selected_sheet,
                                     font_sizes
                                 )
+                                # Calcula altura para exportação baseada no número de barras
+                                num_bars = len(df_plot)
+                                export_height = min(
+                                    max(A4_CONFIG['bar_height_base'], num_bars * A4_CONFIG['bar_height_per_item']),
+                                    A4_CONFIG['bar_height_max']
+                                )
 
-                            # Configuração otimizada para exportação A4
+                            # Configuração de exportação
                             config = {
                                 'toImageButtonOptions': {
                                     'format': 'png',
-                                    'filename': f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ', '_'),
-                                    'height': 1200,  # Altura fixa para A4
-                                    'width': 1890,   # Largura fixa para A4
-                                    'scale': 2       # Alta qualidade
+                                    'filename': f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ',
+                                                                                                                '_'),
+                                    'width': A4_CONFIG['width_px'],
+                                    'height': export_height,
+                                    'scale': 1  # Importante: sem multiplicação
                                 },
-                                'displaylogo': False,
-                                'displayModeBar': True,
-                                'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'],
-                                'modeBarButtonsToAdd': ['downloadImage']
+                                'displaylogo': False
                             }
-
-                            # Exibe o gráfico
                             st.plotly_chart(fig, use_container_width=True, config=config)
 
                             # Instruções para exportação
                             with st.expander("💡 Como exportar para seu documento", expanded=False):
-                                st.markdown("""
+                                st.markdown(f"""
                                 **Para salvar o gráfico:**
                                 1. Passe o mouse sobre o gráfico
                                 2. Clique no ícone 📷 (câmera) no canto superior direito
-                                3. O gráfico será baixado em alta resolução
+                                3. O gráfico será baixado com **{A4_CONFIG['width_px']}px de largura**
 
                                 **No Google Docs:**
                                 - Insira a imagem e ajuste a largura para **16cm**
                                 - A altura será ajustada automaticamente
                                 """)
+
+                        # Sempre exibe tabela de dados (incluindo valores N/A)
+                        with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
+                            # Formata a tabela com padrão brasileiro
+                            df_display = df.copy()
+
+                            # Formatação especial para valores
+                            def format_value_display(row):
+                                if row['Valor'] == 0 and 'N/A' in str(row.get('Valor_Original', '')):
+                                    return "N/A"
+                                else:
+                                    return format_number_br(row['Valor'])
+
+                            df_display['Valor'] = df_display.apply(format_value_display, axis=1)
+                            df_display['Percentual'] = df_display['Percentual'].apply(
+                                lambda x: f"{format_number_br(x, True)}%" if x > 0 else "—"
+                            )
+
+                            # Remove coluna auxiliar antes de exibir
+                            if 'Valor_Original' in df_display.columns:
+                                df_display = df_display.drop('Valor_Original', axis=1)
+                            if 'Idade_Num' in df_display.columns:
+                                df_display = df_display.drop('Idade_Num', axis=1)
+
+                            st.dataframe(df_display, use_container_width=True)
+
+                        # Validação e estatísticas (usando apenas valores válidos)
+                        if not df_plot.empty:
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Total da Categoria", format_number_br(df_plot['Valor'].sum()))
+                            with col2:
+                                if sheet_data['total_matriculas']:
+                                    st.metric("Total de Matrículas",
+                                              format_number_br(sheet_data['total_matriculas']))
+                            with col3:
+                                if sheet_data['total_matriculas']:
+                                    coverage = (df_plot['Valor'].sum() / sheet_data['total_matriculas']) * 100
+                                    st.metric("Cobertura", f"{format_number_br(coverage, True)}%")
+
+                        # Mensagem informativa se não há dados para gráfico
+                        if df_plot.empty and not df.empty:
+                            st.info(
+                                "ℹ️ Esta categoria contém apenas valores N/A ou sem dados numéricos. Veja os detalhes na tabela acima.")
+                    else:
+                        st.warning("Nenhum dado encontrado para esta categoria.")
+
 
 if __name__ == "__main__":
     main()
