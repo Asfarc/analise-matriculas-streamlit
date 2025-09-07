@@ -20,7 +20,7 @@ st.set_page_config(
 # Definir paletas de cores pastéis
 PASTEL_COLORS = {
     # Para categorias binárias (2 valores) - cores contrastantes
-    'binary': ['#5c88ab', '#fdb4b4'],  # Verde pastel e Rosa pastel
+    'binary': ['#fdb4b4', '#5c88ab'],  # Verde pastel e Rosa pastel
 
     # Para múltiplas categorias - gradiente de azul pastel
     'gradient_blue': [
