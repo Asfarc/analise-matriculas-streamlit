@@ -568,7 +568,8 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             zeroline=True,
             zerolinewidth=2,  # Aumentado para maior visibilidade
             zerolinecolor='#444444',
-            automargin=True
+            automargin=True,
+            layer='above traces'
         ),
         yaxis=dict(
             title={
@@ -586,7 +587,8 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             separatethousands=True,
             showgrid=False,
             zeroline=False,
-            automargin=True
+            automargin=True,
+            layer='above traces'
         ),
         height=500,
         showlegend=False,
