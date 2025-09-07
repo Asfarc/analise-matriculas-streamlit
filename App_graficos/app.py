@@ -500,19 +500,18 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Ordena por x (geralmente idade)
     data = data.sort_values(by=x_col)
-    data = data.reset_index(drop=True)  # Reset index para garantir sequência correta
+    data = data.reset_index(drop=True)
 
     # Usa cor única da paleta pastel
     line_color = PASTEL_COLORS['single']
 
-    # Prepara os textos - mostra valores apenas em índices pares (0, 2, 4, etc.)
+    # Prepara os textos - mostra valores apenas em índices pares
     text_values = []
     for idx, value in enumerate(data[y_col]):
-        # Mostra valor se o índice for par (0, 2, 4...)
         if idx % 2 == 0:
             text_values.append(format_number_br(value))
         else:
-            text_values.append("")  # Não mostra valor para índices ímpares
+            text_values.append("")
 
     fig.add_trace(go.Scatter(
         x=data[x_col],
@@ -526,22 +525,26 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         ),
         line=dict(color=line_color, width=3),
         marker=dict(size=10, color=line_color),
-        hovertemplate='<b>%{x}</b><br>Quantidade: ' +
-                      '%{y:,.0f}<extra></extra>'
+        hovertemplate='<b>%{x}</b><br>Quantidade: %{y:,.0f}<extra></extra>'
     ))
 
-    # Título completo com tamanhos personalizados
+    # Título principal
     full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
-    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
-    full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
+
+    # ✅ SUBTÍTULO CORRIGIDO COM FORMATAÇÃO ESPECÍFICA
+    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
+    full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
+    full_title += f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
+    full_title += f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+    full_title += "</span>"
 
     fig.update_layout(
-        template='plotly_white',  # Theme classic
+        template='plotly_white',
         title={
             'text': full_title,
             'x': 0.5,
             'xanchor': 'center',
-            'y': 0.98,  # ✅ Título no topo
+            'y': 0.98,
             'yanchor': 'top',
             'font': {'family': 'Open Sans, sans-serif'}
         },
@@ -585,10 +588,10 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         showlegend=False,
         hovermode='x unified',
         margin=dict(
-            l=100,  # Esquerda
-            r=40,   # Direita
-            t=120,  # Topo
-            b=80,   # Base
+            l=100,
+            r=40,
+            t=120,
+            b=80,
             pad=4
         ),
         font=dict(
@@ -596,13 +599,13 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         )
     )
 
-    # ✅ RODAPÉ CORRETAMENTE POSICIONADO
+    # Rodapé
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper",
         yref="paper",
-        x=0.0,  # Pequena margem da esquerda
-        y=-0.24,  # Logo abaixo do gráfico
+        x=0.0,
+        y=-0.24,
         showarrow=False,
         font=dict(
             size=font_sizes['reference'],
