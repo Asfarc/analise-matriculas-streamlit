@@ -391,8 +391,10 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         width=0.8
     ))
 
-    # Título
+    # Título principal
     full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b><br>"
+
+    # Subtítulo com formatação específica
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
     full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
     full_title += f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
