@@ -914,7 +914,7 @@ def main():
                             if 'Idade_Num' in df_display.columns:
                                 df_display = df_display.drop('Idade_Num', axis=1)
 
-                            st.dataframe(df_display, use_container_width=True)
+                            st.dataframe(df_display, width='stretch')
 
                         # Validação e estatísticas (usando apenas valores válidos)
                         if not df_plot.empty:
