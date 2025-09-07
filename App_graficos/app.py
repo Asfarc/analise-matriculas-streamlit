@@ -8,6 +8,7 @@ import numpy as np
 import os
 import requests
 from io import BytesIO
+import textwrap
 
 # Configuração da página
 st.set_page_config(
@@ -19,7 +20,7 @@ st.set_page_config(
 # Definir paletas de cores pastéis
 PASTEL_COLORS = {
     # Para categorias binárias (2 valores) - cores contrastantes
-    'binary': ['#a8d8b9', '#fdb4b4'],  # Verde pastel e Rosa pastel
+    'binary': ['#2E7D32', '#C62828'],  # Verde pastel e Rosa pastel
 
     # Para múltiplas categorias - gradiente de azul pastel
     'gradient_blue': [
@@ -339,6 +340,13 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Ordena por valor decrescente
     data = data.sort_values(by=y_col, ascending=True)
+
+    # --- NOVA LINHA: APLICA A QUEBRA DE TEXTO ---
+    # Quebra o texto da categoria em múltiplas linhas (usando <br> para o Plotly)
+    # se ele for maior que 35 caracteres.
+    data[x_col] = data[x_col].apply(
+        lambda x: '<br>'.join(textwrap.wrap(x, width=35)) if isinstance(x, str) else x
+    )
 
     # Define cores baseado no número de categorias
     num_bars = len(data)
