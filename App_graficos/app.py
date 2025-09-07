@@ -327,7 +327,7 @@ def format_number_br(value: float, is_percent: bool = False) -> str:
 def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
                      percent_col: str = None, deficiency_type: str = "",
                      font_sizes: dict = None) -> go.Figure:
-    """Cria gráfico de barras interativo com formatação pt-BR e estilo aprimorado"""
+    """Cria gráfico de barras com linha vertical em x=0 sempre visível"""
 
     if font_sizes is None:
         font_sizes = {
@@ -341,33 +341,20 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     # Ordena por valor decrescente
     data = data.sort_values(by=y_col, ascending=True)
 
-    # --- NOVA LINHA: APLICA A QUEBRA DE TEXTO ---
-    # Quebra o texto da categoria em múltiplas linhas (usando <br> para o Plotly)
-    # se ele for maior que 35 caracteres.
-    data[x_col] = data[x_col].apply(
-        lambda x: '<br>'.join(textwrap.wrap(x, width=35)) if isinstance(x, str) else x
-    )
-
-    # Define cores baseado no número de categorias
+    # Define cores
     num_bars = len(data)
-
     if num_bars == 2:
-        # Para categorias binárias (ex: M/F, Rural/Urbana)
         colors = PASTEL_COLORS['binary']
     else:
-        # Para múltiplas categorias, usa gradiente de tons pastéis
         gradient = PASTEL_COLORS['gradient_blue']
         if num_bars <= len(gradient):
-            # Seleciona cores espaçadas do gradiente
             step = max(1, len(gradient) // num_bars)
             colors = [gradient[min(i * step, len(gradient) - 1)] for i in range(num_bars)]
         else:
-            # Se tiver mais barras que cores, repete o gradiente
             colors = [gradient[i % len(gradient)] for i in range(num_bars)]
-        # Inverte para que valores maiores tenham cores mais escuras
         colors = colors[::-1]
 
-    # Texto para hover e labels com formatação pt-BR
+    # Prepara textos
     if percent_col and percent_col in data.columns:
         hover_text = [
             f"<b>{row[x_col]}</b><br>"
@@ -387,6 +374,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     fig = go.Figure()
 
+    # Adiciona as barras
     fig.add_trace(go.Bar(
         y=data[x_col],
         x=data[y_col],
@@ -400,95 +388,96 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         hovertemplate='%{hovertext}<extra></extra>',
         hovertext=hover_text,
         marker_color=colors,
-        width=0.8  # Bar width 80%
+        width=0.8
     ))
 
-    # Título completo com tamanhos personalizados
+    # Título
     full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
     full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
 
     max_value = data[y_col].max() if not data.empty else 100
 
+    # Layout
     fig.update_layout(
-        template='plotly',  # Theme classic
+        template='plotly_white',  # Melhor tema
         title={
             'text': full_title,
             'x': 0.5,
             'xanchor': 'center',
-            'font': {
-                'family': 'Open Sans, sans-serif'
-            }
+            'font': {'family': 'Open Sans, sans-serif'}
         },
         xaxis=dict(
             title={
                 'text': "Quantidade de Matrículas",
-                'font': dict(
-                    size=font_sizes['labels'],
-                    family='Open Sans, sans-serif'
-                )
+                'font': dict(size=font_sizes['labels'], family='Open Sans, sans-serif')
             },
-            tickfont=dict(
-                size=font_sizes['values'],
-                family='Open Sans, sans-serif'
-            ),
+            tickfont=dict(size=font_sizes['values'], family='Open Sans, sans-serif'),
             tickformat=',.0f',
             separatethousands=True,
-            range=[-25, max_value * 1.15],  # Min: -25 conforme solicitado
+            range=[-25, max_value * 1.15],
             showgrid=True,
             gridwidth=1,
             gridcolor='#EEEEEE',
-            zeroline=True,
-            zerolinewidth=2,  # Aumentado para maior visibilidade
-            zerolinecolor='#444444',
-            layer='above traces',  # Garante que a linha zero fique acima das barras
+            zeroline=False,  # ❌ Desabilita zeroline padrão
             automargin=True
         ),
         yaxis=dict(
-            title={
-                'text': "",
-                'font': dict(
-                    size=font_sizes['labels'],
-                    family='Open Sans, sans-serif'
-                )
-            },
-            tickfont=dict(
-                size=font_sizes['labels'],
-                family='Open Sans, sans-serif'
-            ),
-            range=[-1.3, len(data)],  # Min: -1.3 conforme solicitado
+            title="",
+            tickfont=dict(size=font_sizes['labels'], family='Open Sans, sans-serif'),
+            range=[-1.3, len(data)],
             showgrid=False,
             zeroline=False,
             automargin=True
         ),
-        height=max(400, len(data) * 50),
+        height=min(max(400, len(data) * 50), 800),  # Limita altura máxima
         showlegend=False,
         hovermode='closest',
-        margin=dict(
-            l=STYLE_CONFIG['margins']['l'],
-            r=STYLE_CONFIG['margins']['r'],
-            t=STYLE_CONFIG['margins']['t'],
-            b=STYLE_CONFIG['margins']['b'],
-            pad=STYLE_CONFIG['margins']['pad']
-        ),
-        font=dict(
-            family='Open Sans, sans-serif'
-        ),
-        bargap=0,  # Bar padding: 0
+        margin=dict(l=150, r=80, t=100, b=80, pad=4),
+        font=dict(family='Open Sans, sans-serif'),
+        bargap=0.2,  # Pequeno espaço entre barras
         bargroupgap=0
     )
 
-    # Adiciona rodapé com negrito apenas em "Fonte:"
+    # ✅ ADICIONA LINHA VERTICAL EM X=0 (sempre na frente)
+    fig.add_shape(
+        type="line",
+        x0=0, x1=0,
+        y0=-1.5, y1=len(data),  # Estende além das barras
+        line=dict(
+            color="#333333",  # Cor mais escura para destaque
+            width=2.5,  # Largura maior
+            dash=None
+        ),
+        layer="above",  # Garante que fica acima de tudo
+        xref="x",
+        yref="y"
+    )
+
+    # Adiciona linhas de grade verticais adicionais (opcional)
+    grid_values = range(1000, int(max_value) + 1000, 1000)
+    for grid_x in grid_values:
+        fig.add_shape(
+            type="line",
+            x0=grid_x, x1=grid_x,
+            y0=-1.5, y1=len(data),
+            line=dict(
+                color="#EEEEEE",
+                width=1,
+                dash="dot"  # Pontilhada para diferenciar
+            ),
+            layer="below",
+            xref="x",
+            yref="y"
+        )
+
+    # Rodapé
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper", yref="paper",
-        x=0, y=-0.45,
+        x=0, y=-0.15,  # Ajustado para nova altura
         showarrow=False,
-        font=dict(
-            size=font_sizes['reference'],
-            color="gray",
-            family='Open Sans, sans-serif'
-        ),
+        font=dict(size=font_sizes['reference'], color="gray", family='Open Sans, sans-serif'),
         xanchor='left'
     )
 
@@ -572,11 +561,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             showgrid=True,
             gridwidth=1,
             gridcolor='#EEEEEE',
-            zeroline=True,
-            zerolinewidth=2,  # Aumentado para maior visibilidade
-            zerolinecolor='#444444',
-            automargin=True,
-            layer='above traces'
+            zeroline=False,
         ),
         yaxis=dict(
             title={
