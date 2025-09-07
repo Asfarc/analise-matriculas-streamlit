@@ -951,16 +951,6 @@ def main():
                     else:
                         st.warning("Nenhum dado encontrado para esta categoria.")
 
-        # Resumo do arquivo no sidebar
-        if data:
-            with st.sidebar:
-                st.markdown("### 📊 Resumo do Arquivo")
-                if st.session_state.file_name:
-                    st.write(f"**Arquivo:** {st.session_state.file_name}")
-                st.write(f"**Abas encontradas:** {len(data)}")
-                for sheet in data.keys():
-                    sections_count = len(data[sheet]['sections'])
-                    st.write(f"- {sheet}: {sections_count} seções")
 
 
 if __name__ == "__main__":
