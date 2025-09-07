@@ -438,7 +438,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             l=150,  # Esquerda
             r=40,  # Direita
             t=120,  # Topo (para título e subtítulo)
-            b=0,  # Base (para rodapé)
+            b=80,  # Base (para rodapé)
             pad=4
         ),
 
@@ -531,14 +531,14 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
 
     fig.update_layout(
-        template='plotly',  # Theme classic
+        template='plotly_white',  # Theme classic
         title={
             'text': full_title,
             'x': 0.5,
             'xanchor': 'center',
-            'font': {
-                'family': 'Open Sans, sans-serif'
-            }
+            'y': 0.98,  # ✅ Título no topo
+            'yanchor': 'top',
+            'font': {'family': 'Open Sans, sans-serif'}
         },
         xaxis=dict(
             title={
@@ -580,11 +580,11 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         showlegend=False,
         hovermode='x unified',
         margin=dict(
-            l=STYLE_CONFIG['margins']['l'],
-            r=STYLE_CONFIG['margins']['r'],
-            t=STYLE_CONFIG['margins']['t'],
-            b=STYLE_CONFIG['margins']['b'],
-            pad=STYLE_CONFIG['margins']['pad']
+            l=100,  # Esquerda
+            r=40,   # Direita
+            t=120,  # Topo
+            b=80,   # Base
+            pad=4
         ),
         font=dict(
             family='Open Sans, sans-serif'
