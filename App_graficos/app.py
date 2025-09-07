@@ -874,7 +874,7 @@ def main():
                         df_data = []
                         for item in cat_data:
                             # Filtro para remover métricas específicas do RESUMO GERAL
-                            if selected_section == "RESUMO GERAL DO DATASET":
+                            if selected_section == "RESUMO GERAL":
                                 metricas_excluir = [
                                     'total de matrículas',
                                     'total de registros',
