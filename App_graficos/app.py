@@ -154,19 +154,7 @@ def load_default_excel():
             return pd.ExcelFile(default_file)
         except:
             pass
-
-    # Se não encontrar localmente, tenta baixar do GitHub
-    github_url = f"https://github.com/seu-usuario/seu-repo/raw/main/{default_file}"
-
-    try:
-        response = requests.get(github_url)
-        if response.status_code == 200:
-            return pd.ExcelFile(BytesIO(response.content))
-    except:
-        pass
-
     return None
-
 
 def load_and_parse_excel(file) -> Dict:
     """Carrega e faz o parsing do arquivo Excel"""
@@ -850,6 +838,7 @@ def main():
                             font_sizes
                         )
                         st.plotly_chart(fig, width='stretch')
+
                 else:
                     # Dados regulares
                     cat_data = categories[selected_category]
@@ -857,6 +846,17 @@ def main():
                         # Cria DataFrame
                         df_data = []
                         for item in cat_data:
+                            # Filtro para remover métricas específicas do RESUMO GERAL
+                            if selected_section == "RESUMO GERAL DO DATASET":
+                                metricas_excluir = [  # ← ESTA LINHA ESTAVA FALTANDO
+                                    'total de matrículas',
+                                    'total de registros',
+                                    'total de escolas únicas',
+                                    'total de municípios únicos'
+                                ]
+                                if any(x in item['metrica'].lower() for x in metricas_excluir):
+                                    continue
+
                             df_data.append({
                                 'Categoria': item['metrica'],
                                 'Valor': item['valor'] if item['valor'] is not None else 0,
