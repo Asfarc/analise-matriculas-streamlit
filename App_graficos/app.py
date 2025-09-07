@@ -11,7 +11,7 @@ from io import BytesIO
 import plotly.io as pio
 import plotly.express as px
 
-pio.templates.default = "ggplot2"
+pio.templates.default = "seaborn"
 
 # Configuração da página
 st.set_page_config(
