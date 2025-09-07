@@ -432,7 +432,8 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             tickfont=dict(size=font_sizes['values'], family='Open Sans, sans-serif'),
             tickformat=',.0f',
             separatethousands=True,
-            range=[-25, max_value * 1.15],
+            # Ajusta range dinamicamente baseado no tamanho da fonte
+            range=[-25, max_value * (1.25 + (font_sizes['values'] - 11) * 0.02)],
             showgrid=True,
             gridwidth=1,
             gridcolor='#EEEEEE',
@@ -453,7 +454,8 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         hovermode='closest',
         margin=dict(
             l=150,
-            r=40,
+            # Margem direita dinâmica baseada no tamanho da fonte
+            r=max(80, 40 + (font_sizes['values'] - 11) * 8),
             t=120,
             b=80,
             pad=4
