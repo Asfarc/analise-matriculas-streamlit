@@ -417,7 +417,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Layout
     fig.update_layout(
-        template='plotly',
+        template='seaborn',
         title={
             'text': full_title,
             'x': 0.5,
@@ -557,7 +557,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     full_title = f"{main_title_html}<br>{subtitle_html}"
 
     fig.update_layout(
-        template='plotly',
+        template='seaborn',
         title={
             'text': full_title,
             'x': 0.5,
