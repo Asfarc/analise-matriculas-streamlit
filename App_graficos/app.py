@@ -392,26 +392,28 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     ))
 
     # Título principal
-    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b><br>"
-    # DEBUG - Adicione temporariamente após criar full_title
-    print("=" * 50)
-    print("DEBUG - Título HTML gerado:")
-    print(full_title)
-    print("=" * 50)
-    # Subtítulo com formatação específica
-    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
-    full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
-    full_title += f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
-    full_title += f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
-    full_title += "</span>"
+    main_title_html = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b>"
+
+    # Subtítulo com formatação específica (versão corrigida e mais legível)
+    # Construímos o subtítulo em uma única f-string para garantir que o HTML seja bem formado.
+    subtitle_html = (
+        f"<span style='font-size:{font_sizes['subtitle']}px'>"
+        f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
+        f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
+        f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+        f"</span>"
+    )
+
+    # Combina o título principal e o subtítulo com uma quebra de linha
+    full_title = f"{main_title_html}<br>{subtitle_html}"
 
     max_value = data[y_col].max() if not data.empty else 100
 
     # Layout
     fig.update_layout(
-        template='plotly_white',  # Melhor tema
+        template='plotly_white',
         title={
-            'text': full_title,
+            'text': full_title,  # A variável corrigida é usada aqui
             'x': 0.5,
             'xanchor': 'center',
             'font': {'family': 'Open Sans, sans-serif'}
@@ -533,19 +535,20 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     ))
 
     # Título principal
-    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
-    # DEBUG - Adicione temporariamente após criar full_title
-    print("=" * 50)
-    print("DEBUG - Título HTML gerado:")
-    print(full_title)
-    print("=" * 50)
+    main_title_html = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b>"
 
-    # ✅ SUBTÍTULO CORRIGIDO COM FORMATAÇÃO ESPECÍFICA
-    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
-    full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
-    full_title += f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
-    full_title += f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
-    full_title += "</span>"
+    # Subtítulo com formatação específica (versão corrigida e mais legível)
+    # Construímos o subtítulo em uma única f-string para garantir que o HTML seja bem formado.
+    subtitle_html = (
+        f"<span style='font-size:{font_sizes['subtitle']}px'>"
+        f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
+        f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
+        f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+        f"</span>"
+    )
+
+    # Combina o título principal e o subtítulo com uma quebra de linha
+    full_title = f"{main_title_html}<br>{subtitle_html}"
 
     fig.update_layout(
         template='plotly_white',
