@@ -10,6 +10,31 @@ import requests
 from io import BytesIO
 import textwrap
 
+# Configurações para exportação otimizada para A4
+EXPORT_CONFIG = {
+    'a4_width_cm': 16,  # Largura útil A4 (21cm - margens 3cm + 2cm)
+    'a4_height_cm': 24.7,  # Altura útil A4 (29.7cm - margens 3cm + 2cm)
+    'dpi': 300,  # Alta resolução para impressão
+    'width_px': 1890,  # 16cm * 118 px/cm em 300 DPI
+    'height_px_bar': 945,  # Altura para gráficos de barra (8cm)
+    'height_px_line': 709,  # Altura para gráficos de linha (6cm)
+    'scale': 2  # Fator de escala para melhor qualidade
+}
+
+# Configuração do Plotly para exportação
+plotly_config = {
+    'toImageButtonOptions': {
+        'format': 'png',
+        'filename': 'grafico_educacao_especial',
+        'height': None,  # Será definido por gráfico
+        'width': EXPORT_CONFIG['width_px'],
+        'scale': EXPORT_CONFIG['scale']
+    },
+    'displaylogo': False,
+    'modeBarButtonsToAdd': ['downloadImage'],
+    'displayModeBar': True
+}
+
 # Configuração da página
 st.set_page_config(
     page_title="Análise de Matrículas - Educação Especial",
@@ -477,6 +502,12 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         align='left'
     )
 
+    # Configuração para exportação otimizada
+    fig.update_layout(
+        width=EXPORT_CONFIG['width_px'],
+        height=min(max(400, len(data) * 60), EXPORT_CONFIG['height_px_bar'])
+    )
+
     return fig
 
 
@@ -617,6 +648,12 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         xanchor='left',
         yanchor='top',
         align='left'
+    )
+
+    # Configuração para exportação otimizada
+    fig.update_layout(
+        width=EXPORT_CONFIG['width_px'],
+        height=EXPORT_CONFIG['height_px_line']
     )
 
     return fig
@@ -838,6 +875,11 @@ def main():
                             font_sizes
                         )
                         st.plotly_chart(fig, width='stretch')
+                        # Configuração customizada para exportação
+                        config = plotly_config.copy()
+                        config['toImageButtonOptions']['height'] = fig.layout.height
+                        config['toImageButtonOptions'][
+                            'filename'] = f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ', '_')
 
                 else:
                     # Dados regulares
@@ -902,7 +944,42 @@ def main():
                                     font_sizes
                                 )
 
-                            st.plotly_chart(fig, width='stretch')
+                            # Configuração customizada para exportação
+                            config = plotly_config.copy()
+                            config['toImageButtonOptions']['height'] = fig.layout.height
+                            config['toImageButtonOptions'][
+                                'filename'] = f'grafico_{selected_sheet}_{selected_category}'.lower().replace(' ', '_')
+
+                            # Exibe o gráfico com a configuração
+                            st.plotly_chart(fig, width = 'stretch', config=config)
+
+                            # Botão de download otimizado para A4
+                            col1, col2, col3 = st.columns([1, 2, 1])
+                            with col2:
+                                if st.button(f"📥 Baixar Gráfico Otimizado para A4",
+                                             key=f"download_{selected_category}"):
+                                    # Ajusta temporariamente o layout para exportação
+                                    fig_export = fig
+                                    fig_export.update_layout(
+                                        width=EXPORT_CONFIG['width_px'],
+                                        height=EXPORT_CONFIG['height_px_bar'] if 'bar' in str(type(fig.data[0])) else
+                                        EXPORT_CONFIG['height_px_line'],
+                                        font=dict(size=14),  # Aumenta fonte para melhor legibilidade
+                                        title_font_size=24,
+                                        margin=dict(l=180, r=50, t=140, b=100)  # Margens maiores para impressão
+                                    )
+
+                                    # Gera o arquivo
+                                    img_bytes = fig_export.to_image(format="png", scale=EXPORT_CONFIG['scale'])
+                                    st.download_button(
+                                        label="💾 Confirmar Download",
+                                        data=img_bytes,
+                                        file_name=f"grafico_{selected_sheet}_{selected_category}.png".lower().replace(
+                                            ' ', '_'),
+                                        mime="image/png"
+                                    )
+                                    st.success("✅ Gráfico otimizado para documento A4!")
+
 
                         # Sempre exibe tabela de dados (incluindo valores N/A)
                         with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
