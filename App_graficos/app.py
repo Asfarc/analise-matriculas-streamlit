@@ -51,9 +51,9 @@ PASTEL_COLORS = {
 
 # Configurações globais de estilo
 STYLE_CONFIG = {
-    'font_family': 'Arial',
+    'font_family': 'Open Sans, sans-serif',
     'title_font': {
-        'family': 'Arial',
+        'family': 'Open Sans, sans-serif',
         'size': 20,
         'color': 'black'
     },
@@ -384,7 +384,8 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         textposition='outside',
         textfont=dict(
             size=font_sizes['values'],
-            family='Arial'
+            family='Open Sans, sans-serif',
+            color='#444444' # <-- ADICIONADO: Melhora a cor dos valores fora das barras
         ),
         hovertemplate='%{hovertext}<extra></extra>',
         hovertext=hover_text,
@@ -422,14 +423,14 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             'text': full_title,
             'x': 0.5,
             'xanchor': 'center',
-            'font': {'family': 'Arial'}
+            'font': {'family': 'Open Sans, sans-serif'}
         },
         xaxis=dict(
             title={
                 'text': "Quantidade de Matrículas",
-                'font': dict(size=font_sizes['labels'], family='Arial')
+                'font': dict(size=font_sizes['labels'], family='Open Sans, sans-serif', color='#444444')
             },
-            tickfont=dict(size=font_sizes['values'], family='Arial'),
+            tickfont=dict(size=font_sizes['values'], family='Open Sans, sans-serif', color='#444444'),
             tickformat=',.0f',
             separatethousands=True,
             # Ajusta range dinamicamente baseado no tamanho da fonte
@@ -442,7 +443,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         ),
         yaxis=dict(
             title="",
-            tickfont=dict(size=font_sizes['labels'], family='Arial'),
+            tickfont=dict(size=font_sizes['labels'], family='Open Sans, sans-serif', color='#444444'),
             range=[-1.3, len(data)],
             showgrid=False,
             zeroline=False,
@@ -460,7 +461,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             b=80,
             pad=4
         ),
-        font=dict(family='Arial'),
+        font=dict(family='Open Sans, sans-serif', color='#444444'),
         bargap=0.2,
         bargroupgap=0
     )
@@ -486,7 +487,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         font=dict(
             size=font_sizes['reference'],
             color="#666666",
-            family='Arial'
+            family='Open Sans, sans-serif'
         ),
         xanchor='left',
         yanchor='top',
@@ -534,7 +535,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         textposition="top center",
         textfont=dict(
             size=font_sizes['values'],
-            family='Arial'
+            family='Open Sans, sans-serif'
         ),
         line=dict(color=line_color, width=3),
         marker=dict(size=10, color=line_color),
@@ -564,19 +565,19 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             'xanchor': 'center',
             'y': 0.98,
             'yanchor': 'top',
-            'font': {'family': 'Arial'}
+            'font': {'family': 'Open Sans, sans-serif'}
         },
         xaxis=dict(
             title={
                 'text': x_col.capitalize(),
                 'font': dict(
                     size=font_sizes['labels'],
-                    family='Arial'
+                    family='Open Sans, sans-serif'
                 )
             },
             tickfont=dict(
                 size=font_sizes['values'],
-                family='Arial'
+                family='Open Sans, sans-serif'
             ),
             showgrid=True,
             gridwidth=1,
@@ -588,12 +589,12 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
                 'text': "Quantidade de Matrículas",
                 'font': dict(
                     size=font_sizes['labels'],
-                    family='Arial'
+                    family='Open Sans, sans-serif'
                 )
             },
             tickfont=dict(
                 size=font_sizes['values'],
-                family='Arial'
+                family='Open Sans, sans-serif'
             ),
             tickformat=',.0f',
             separatethousands=True,
@@ -614,7 +615,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
             pad=4
         ),
         font=dict(
-            family='Arial'
+            family='Open Sans, sans-serif'
         )
     )
 
@@ -629,7 +630,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         font=dict(
             size=font_sizes['reference'],
             color="#666666",
-            family='Arial'
+            family='Open Sans, sans-serif'
         ),
         xanchor='left',
         yanchor='top',
