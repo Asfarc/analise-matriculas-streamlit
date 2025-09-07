@@ -146,7 +146,7 @@ class DataParser:
 
 def load_default_excel():
     """Carrega o arquivo Excel padrão do repositório ou local"""
-    default_file = "analise_deficiencias_20250906_093833"
+    default_file = "analise_deficiencias"
 
     # Primeiro tenta carregar localmente
     if os.path.exists(default_file):
@@ -731,7 +731,7 @@ def main():
         st.session_state.file_name = None
 
     # Tenta carregar o arquivo padrão automaticamente
-    default_file = "analise_deficiencias_20250906_093833.xlsx"
+    default_file = "analise_deficiencias.xlsx"
 
     # Upload do arquivo ou uso do padrão
     col1, col2 = st.columns([3, 1])
