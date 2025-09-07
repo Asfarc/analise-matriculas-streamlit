@@ -951,19 +951,6 @@ def main():
                             }
                             st.plotly_chart(fig, use_container_width=True, config=config)
 
-                            # Instruções para exportação
-                            with st.expander("💡 Como exportar para seu documento", expanded=False):
-                                st.markdown(f"""
-                                **Para salvar o gráfico:**
-                                1. Passe o mouse sobre o gráfico
-                                2. Clique no ícone 📷 (câmera) no canto superior direito
-                                3. O gráfico será baixado com **{A4_CONFIG['width_px']}px de largura**
-
-                                **No Google Docs:**
-                                - Insira a imagem e ajuste a largura para **16cm**
-                                - A altura será ajustada automaticamente
-                                """)
-
                         # Sempre exibe tabela de dados (incluindo valores N/A)
                         with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
                             # Formata a tabela com padrão brasileiro
