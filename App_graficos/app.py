@@ -393,7 +393,11 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Título principal
     full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b><br>"
-
+    # DEBUG - Adicione temporariamente após criar full_title
+    print("=" * 50)
+    print("DEBUG - Título HTML gerado:")
+    print(full_title)
+    print("=" * 50)
     # Subtítulo com formatação específica
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
     full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
@@ -530,6 +534,11 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
 
     # Título principal
     full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
+    # DEBUG - Adicione temporariamente após criar full_title
+    print("=" * 50)
+    print("DEBUG - Título HTML gerado:")
+    print(full_title)
+    print("=" * 50)
 
     # ✅ SUBTÍTULO CORRIGIDO COM FORMATAÇÃO ESPECÍFICA
     full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
