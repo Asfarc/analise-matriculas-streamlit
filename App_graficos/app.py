@@ -710,21 +710,6 @@ def main():
 
         st.divider()
 
-        st.markdown("### ℹ️ Informações")
-        st.info(
-            "**Como usar:**\n"
-            "1. O arquivo padrão é carregado automaticamente\n"
-            "2. Ou faça upload de outro arquivo Excel\n"
-            "3. Selecione o tipo de deficiência (aba)\n"
-            "4. Escolha a seção de análise\n"
-            "5. Selecione a categoria para visualização\n\n"
-            "**Observações:**\n"
-            "- Números formatados em pt-BR\n"
-            "- Percentuais calculados automaticamente\n"
-            "- Gráficos interativos (hover para detalhes)\n"
-            "- Cores: Categorias binárias contrastantes, múltiplas em gradiente\n"
-            "- Fonte: Open Sans"
-        )
 
     # Inicializa o estado da sessão
     if 'data' not in st.session_state:
