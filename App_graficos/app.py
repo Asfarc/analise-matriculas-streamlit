@@ -433,52 +433,46 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         height=min(max(400, len(data) * 50), 800),  # Limita altura máxima
         showlegend=False,
         hovermode='closest',
-        margin=dict(l=150, r=80, t=100, b=80, pad=4),
+        # ✅ Margens ajustadas para acomodar rodapé
+        margin=dict(
+            l=150,  # Esquerda
+            r=40,  # Direita
+            t=120,  # Topo (para título e subtítulo)
+            b=80,  # Base (para rodapé)
+            pad=4
+        ),
+
         font=dict(family='Open Sans, sans-serif'),
-        bargap=0.2,  # Pequeno espaço entre barras
+        bargap=0.2,
         bargroupgap=0
     )
 
-    # ✅ ADICIONA LINHA VERTICAL EM X=0 (sempre na frente)
+    # ✅ Adiciona linha vertical em x=0
     fig.add_shape(
         type="line",
         x0=0, x1=0,
-        y0=-1.5, y1=len(data),  # Estende além das barras
-        line=dict(
-            color="#333333",  # Cor mais escura para destaque
-            width=2.5,  # Largura maior
-            dash=None
-        ),
-        layer="above",  # Garante que fica acima de tudo
-        xref="x",
-        yref="y"
+        y0=-1.5, y1=len(data),
+        line=dict(color="#333333", width=2.5),
+        layer="above",
+        xref="x", yref="y"
     )
 
-    # Adiciona linhas de grade verticais adicionais (opcional)
-    grid_values = range(1000, int(max_value) + 1000, 1000)
-    for grid_x in grid_values:
-        fig.add_shape(
-            type="line",
-            x0=grid_x, x1=grid_x,
-            y0=-1.5, y1=len(data),
-            line=dict(
-                color="#EEEEEE",
-                width=1,
-                dash="dot"  # Pontilhada para diferenciar
-            ),
-            layer="below",
-            xref="x",
-            yref="y"
-        )
-
-    # Rodapé
+    # ✅ RODAPÉ CORRETAMENTE POSICIONADO
     fig.add_annotation(
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
-        xref="paper", yref="paper",
-        x=0, y=-0.15,  # Ajustado para nova altura
+        xref="paper",
+        yref="paper",
+        x=0.01,  # Pequena margem da esquerda
+        y=-0.08,  # Logo abaixo do gráfico
         showarrow=False,
-        font=dict(size=font_sizes['reference'], color="gray", family='Open Sans, sans-serif'),
-        xanchor='left'
+        font=dict(
+            size=font_sizes['reference'],
+            color="#666666",
+            family='Open Sans, sans-serif'
+        ),
+        xanchor='left',
+        yanchor='top',
+        align='left'
     )
 
     return fig
