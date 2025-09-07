@@ -392,9 +392,12 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
     ))
 
     # Título
-    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Quantidade de matrículas da Educação Especial por {title}</span></b><br>"
-    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>Tipo de deficiência: {deficiency_type} | "
-    full_title += "Rede: Pública — estadual e municipal | Pernambuco | 2024</span>"
+    full_title = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b><br>"
+    full_title += f"<span style='font-size:{font_sizes['subtitle']}px'>"
+    full_title += f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
+    full_title += f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
+    full_title += f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+    full_title += "</span>"
 
     max_value = data[y_col].max() if not data.empty else 100
 
