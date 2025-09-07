@@ -828,6 +828,11 @@ def main():
                             font_sizes
                         )
                         st.plotly_chart(fig, width='stretch')
+
+                        # ✅ Rodapé como texto do Streamlit
+                        st.caption(
+                            "**Fonte:** Elaboração própria, com base nos dados informados pelo Inep (doc. 2)."
+                        )
                 else:
                     # Dados regulares
                     cat_data = categories[selected_category]
@@ -881,6 +886,11 @@ def main():
                                 )
 
                             st.plotly_chart(fig, width='stretch')
+
+                        # ✅ Rodapé como texto do Streamlit
+                        st.caption(
+                            "**Fonte:** Elaboração própria, com base nos dados informados pelo Inep (doc. 2)."
+                        )
 
                         # Sempre exibe tabela de dados (incluindo valores N/A)
                         with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
