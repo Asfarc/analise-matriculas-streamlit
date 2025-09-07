@@ -678,7 +678,7 @@ def categorize_data(section_data: dict, section_name: str) -> dict:
             categorized = True
 
         # Etapas de ensino
-        elif any(x in metric for x in ['infantil', 'fundamental', 'médio', 'eja', 'profissional']):
+        elif any(x in metric for x in ['infantil', 'fundamental', 'médio', 'medio', 'eja', 'profissional']):
             if 'Etapa de Ensino' not in categories:
                 categories['Etapa de Ensino'] = []
             categories['Etapa de Ensino'].append(item)
