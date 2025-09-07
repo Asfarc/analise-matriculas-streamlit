@@ -391,21 +391,24 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         width=0.8
     ))
 
-    # Título principal
-    main_title_html = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b>"
+    # --- INÍCIO DA NOVA CORREÇÃO ---
 
-    # Subtítulo com formatação específica (versão corrigida e mais legível)
-    # Construímos o subtítulo em uma única f-string para garantir que o HTML seja bem formado.
+    # Título principal, agora usando CSS para negrito e tamanho em um único elemento
+    main_title_html = f"<span style='font-weight: bold; font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span>"
+
+    # Subtítulo, usando a mesma abordagem de 'font-weight: bold' para cada parte
     subtitle_html = (
         f"<span style='font-size:{font_sizes['subtitle']}px'>"
-        f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
-        f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
-        f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+        f"<span style='font-weight: bold;'>Tipo de deficiência:</span> {deficiency_type} <span style='font-weight: bold;'>|</span> "
+        f"<span style='font-weight: bold;'>Rede:</span> Pública <span style='font-weight: bold;'>—</span> Estadual e Municipal <span style='font-weight: bold;'>|</span> "
+        f"<span style='font-weight: bold;'>Pernambuco</span> <span style='font-weight: bold;'>|</span> <span style='font-weight: bold;'>2024</span>"
         f"</span>"
     )
 
     # Combina o título principal e o subtítulo com uma quebra de linha
     full_title = f"{main_title_html}<br>{subtitle_html}"
+
+    # --- FIM DA NOVA CORREÇÃO ---
 
     max_value = data[y_col].max() if not data.empty else 100
 
@@ -534,16 +537,15 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         hovertemplate='<b>%{x}</b><br>Quantidade: %{y:,.0f}<extra></extra>'
     ))
 
-    # Título principal
-    main_title_html = f"<b><span style='font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span></b>"
+    # Título principal, agora usando CSS para negrito e tamanho em um único elemento
+    main_title_html = f"<span style='font-weight: bold; font-size:{font_sizes['title']}px'>Matrículas da Educação Especial — {title}</span>"
 
-    # Subtítulo com formatação específica (versão corrigida e mais legível)
-    # Construímos o subtítulo em uma única f-string para garantir que o HTML seja bem formado.
+    # Subtítulo, usando a mesma abordagem de 'font-weight: bold' para cada parte
     subtitle_html = (
         f"<span style='font-size:{font_sizes['subtitle']}px'>"
-        f"<b>Tipo de deficiência:</b> {deficiency_type} <b>|</b> "
-        f"<b>Rede:</b> Pública <b>—</b> Estadual e Municipal <b>|</b> "
-        f"<b>Pernambuco</b> <b>|</b> <b>2024</b>"
+        f"<span style='font-weight: bold;'>Tipo de deficiência:</span> {deficiency_type} <span style='font-weight: bold;'>|</span> "
+        f"<span style='font-weight: bold;'>Rede:</span> Pública <span style='font-weight: bold;'>—</span> Estadual e Municipal <span style='font-weight: bold;'>|</span> "
+        f"<span style='font-weight: bold;'>Pernambuco</span> <span style='font-weight: bold;'>|</span> <span style='font-weight: bold;'>2024</span>"
         f"</span>"
     )
 
