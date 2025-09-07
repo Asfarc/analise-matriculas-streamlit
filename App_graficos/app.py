@@ -8,6 +8,10 @@ import numpy as np
 import os
 import requests
 from io import BytesIO
+import plotly.io as pio
+import plotly.express as px
+
+pio.templates.default = "plotly"
 
 # Configuração da página
 st.set_page_config(
