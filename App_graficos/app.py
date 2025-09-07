@@ -68,8 +68,6 @@ STYLE_CONFIG = {
         }
     }
 }
-
-
 class DataParser:
     """Parser especializado para a estrutura específica dos dados"""
 
@@ -838,7 +836,7 @@ def main():
                             selected_sheet,
                             font_sizes
                         )
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, width='stretch')
                 else:
                     # Dados regulares
                     cat_data = categories[selected_category]
@@ -891,7 +889,7 @@ def main():
                                     font_sizes
                                 )
 
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width='stretch')
 
                         # Sempre exibe tabela de dados (incluindo valores N/A)
                         with st.expander("📋 Ver dados tabulares", expanded=(df_plot.empty)):
