@@ -462,7 +462,7 @@ def create_bar_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper",
         yref="paper",
-        x=0.01,  # Pequena margem da esquerda
+        x=0.0,  # Pequena margem da esquerda
         y=-0.24,  # Logo abaixo do gráfico
         showarrow=False,
         font=dict(
@@ -596,7 +596,7 @@ def create_line_chart(data: pd.DataFrame, title: str, x_col: str, y_col: str,
         text="<b>Fonte:</b> Elaboração própria, com base nos dados informados pelo Inep (doc. 2).",
         xref="paper",
         yref="paper",
-        x=0.01,  # Pequena margem da esquerda
+        x=0.0,  # Pequena margem da esquerda
         y=-0.24,  # Logo abaixo do gráfico
         showarrow=False,
         font=dict(
